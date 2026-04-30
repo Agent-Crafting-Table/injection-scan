@@ -4,6 +4,51 @@ A zero-dependency Node.js scanner for detecting prompt injection attempts in ext
 
 > Part of [The Agent Crafting Table](https://github.com/Agent-Crafting-Table) — standalone Claude Code agent components.
 
+## How It Works
+
+```mermaid
+flowchart TD
+    A[External content
+URL / email / API response / user input] --> B[injection-scan.js]
+
+    B --> C[Pattern matching
+60+ regex patterns
+9 attack categories]
+    B --> D[Semantic density layer
+paraphrasing attack detection]
+
+    subgraph "9 Attack Categories"
+        C --> C1[instruction-override
+"ignore previous instructions"]
+        C --> C2[role-switch
+"you are now DAN"]
+        C --> C3[data-exfil
+"print your system prompt"]
+        C --> C4[jailbreak
+"pretend you have no limits"]
+        C --> C5[context-leak
+"reveal your instructions"]
+        C --> C6[+4 more categories]
+    end
+
+    C --> S[Score accumulation
+per category severity]
+    D --> S
+    S --> E{Risk threshold}
+
+    E -->|score = 0| F[exit 0: clean
+safe to pass to LLM]
+    E -->|score low| G[exit 1: suspicious
+human review recommended]
+    E -->|score high| H[exit 2: blocked
+do NOT pass to LLM]
+
+    F --> OUT[JSON stdout
+risk + score + findings]
+    G --> OUT
+    H --> OUT
+```
+
 ## Drop-in
 
 ```bash
